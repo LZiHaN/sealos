@@ -18,8 +18,6 @@ package e2e
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 
 	"github.com/onsi/gomega/gexec"
 
@@ -30,14 +28,12 @@ import (
 
 var _ = Describe("single-node-clusterfile test", func() {
 	var (
-		applyClusterFile string
-		genClusterFile   string
-		cmdApplyArgs     string
-		cmdGenArgs       string
-		randomStr        string
-		output           []byte
-		err              error
-		t                *gexec.Session
+		clusterFile  string
+		cmdApplyArgs string
+		cmdGenArgs   string
+		output       []byte
+		err          error
+		t            *gexec.Session
 	)
 
 	BeforeEach(func() {
@@ -52,25 +48,20 @@ spec:
   - hub.sealos.cn/labring/helm:v3.11.0
   - hub.sealos.cn/labring/flannel:v0.21.4`)
 
-		applyClusterFile = testhelper.CreateTempFile()
-		err = testhelper.WriteFile(applyClusterFile, content)
+		clusterFile = testhelper.CreateTempFile()
+		err = testhelper.WriteFile(clusterFile, content)
 		if err != nil {
-			Fail(fmt.Sprintf("Failed to create temporary file %s: %v", applyClusterFile, err))
+			Fail(fmt.Sprintf("Failed to create temporary file %s: %v", clusterFile, err))
 		}
 
-		rand.Seed(time.Now().UnixNano())
-		randomStr = testhelper.RandSeq(5)
-		genClusterFile = "ClusterFile" + randomStr
-
 		// Set command-line parameters for the sealos command-line tool.
-		cmdApplyArgs = fmt.Sprintf("sudo sealos apply -f %s", applyClusterFile)
-		cmdGenArgs = fmt.Sprintf("sudo sealos gen hub.sealos.cn/labring/kubernetes:v1.25.6 hub.sealos.cn/labring/helm:v3.11.0 hub.sealos.cn/labring/flannel:v0.21.4 -o %s", genClusterFile)
+		cmdApplyArgs = fmt.Sprintf("sudo sealos apply -f %s", clusterFile)
+		cmdGenArgs = fmt.Sprintf("sudo sealos gen hub.sealos.cn/labring/kubernetes:v1.25.6 hub.sealos.cn/labring/helm:v3.11.0 hub.sealos.cn/labring/flannel:v0.21.4 -o %s", clusterFile)
 	})
 
 	AfterEach(func() {
 		// Delete temporary files
-		defer testhelper.RemoveTempFile(genClusterFile)
-		defer testhelper.RemoveTempFile(applyClusterFile)
+		defer testhelper.RemoveTempFile(clusterFile)
 	})
 
 	Context("successfully deploy a single-node Kubernetes cluster", func() {
@@ -107,12 +98,12 @@ spec:
 			By("test run sealos gen", func() {
 				// Run the sealos command line tool and capture output and error messages.
 				testhelper.RunCmdAndCheckResult(cmdGenArgs, 0)
-				Expect(testhelper.IsFileExist(genClusterFile)).To(BeTrue(), fmt.Sprintf("%s should be created, but not found", genClusterFile))
+				Expect(testhelper.IsFileExist(clusterFile)).To(BeTrue(), fmt.Sprintf("%s should be created, but not found", clusterFile))
 			})
 
 			By("test run sealos apply", func() {
 				// Run the sealos command line tool and capture output and error messages.
-				t = testhelper.RunCmdAndCheckResult(fmt.Sprintf("sudo sealos apply -f %s", genClusterFile), 0)
+				t = testhelper.RunCmdAndCheckResult(fmt.Sprintf("sudo sealos apply -f %s", clusterFile), 0)
 				output = t.Out.Contents()
 				Expect(string(output)).To(ContainSubstring("succeeded in creating a new cluster"))
 			})
