@@ -60,7 +60,7 @@ spec:
 
 		rand.Seed(time.Now().UnixNano())
 		randomStr = testhelper.RandSeq(5)
-		genClusterFile = genClusterFile + randomStr
+		genClusterFile = "ClusterFile" + randomStr
 
 		// Set command-line parameters for the sealos command-line tool.
 		cmdApplyArgs = fmt.Sprintf("sudo sealos apply -f %s", applyClusterFile)
@@ -69,8 +69,8 @@ spec:
 
 	AfterEach(func() {
 		// Delete temporary files
-		testhelper.RemoveTempFile(applyClusterFile)
-		testhelper.RemoveTempFile(genClusterFile)
+		defer testhelper.RemoveTempFile(genClusterFile)
+		defer testhelper.RemoveTempFile(applyClusterFile)
 	})
 
 	Context("successfully deploy a single-node Kubernetes cluster", func() {
