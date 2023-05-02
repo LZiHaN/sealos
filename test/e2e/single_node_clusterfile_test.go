@@ -21,9 +21,10 @@ import (
 
 	"github.com/onsi/gomega/gexec"
 
-	"github.com/labring/sealos/test/e2e/testhelper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/labring/sealos/test/e2e/testhelper"
 )
 
 var _ = Describe("single-node-clusterfile test", func() {
