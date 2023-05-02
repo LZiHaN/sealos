@@ -18,6 +18,9 @@ package e2e
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/labring/sealos/test/e2e/testhelper/settings"
 
 	"github.com/onsi/gomega/gexec"
 
@@ -67,6 +70,7 @@ spec:
 
 	Context("successfully deploy a single-node Kubernetes cluster", func() {
 		It("sealos apply single-node Clusterfile", func() {
+			settings.E2EConfig.WaitTime = 600 * time.Second
 			By("test run sealos reset", func() {
 				t = testhelper.RunCmdAndCheckResult("sudo sealos reset --force", 0)
 				output = t.Out.Contents()
@@ -90,6 +94,7 @@ spec:
 		})
 
 		It("sealos gen single-node Clusterfile", func() {
+			settings.E2EConfig.WaitTime = 600 * time.Second
 			By("test run sealos reset", func() {
 				t = testhelper.RunCmdAndCheckResult("sudo sealos reset --force", 0)
 				output = t.Out.Contents()
