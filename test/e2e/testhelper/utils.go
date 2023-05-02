@@ -18,6 +18,7 @@ import (
 	"debug/elf"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -109,6 +110,16 @@ func GetFileDataLocally(filePath string) string {
 	result, err := exec.RunBashCmd(cmd)
 	CheckErr(err)
 	return result
+}
+
+func RandSeq(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 // DeleteFileLocally delete file for cloud apply
