@@ -19,6 +19,7 @@ replace (
 require (
 	github.com/docker/docker v23.0.4+incompatible
 	github.com/google/go-containerregistry v0.14.0
+	github.com/google/uuid v1.3.0
 	github.com/labring/image-cri-shim v0.0.0
 	github.com/labring/sealos v0.0.0
 	github.com/labring/sealos/controllers/infra v0.0.0
@@ -110,7 +111,6 @@ require (
 	github.com/google/go-intervals v0.0.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -126,6 +126,7 @@ require (
 	github.com/klauspost/pgzip v1.2.6-0.20220930104621-17e8dac29df8 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/labring/sealos/controllers/cluster v0.0.0-20230417222036-c48922461ea6 // indirect
+	github.com/labring/sealos/controllers/common v0.0.0-20230501134700-ff35c3e6ef84 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20221109233200-85aa52084eaf // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
