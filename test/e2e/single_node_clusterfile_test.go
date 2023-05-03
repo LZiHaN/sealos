@@ -31,7 +31,6 @@ import (
 )
 
 var _ = Describe("single-node-clusterfile test", func() {
-
 	var (
 		clusterFile  string
 		cmdApplyArgs string
