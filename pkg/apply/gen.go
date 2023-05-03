@@ -19,6 +19,8 @@ package apply
 import (
 	"fmt"
 
+	"github.com/labring/sealos/pkg/utils/iputils"
+
 	"github.com/labring/sealos/pkg/apply/processor"
 	"github.com/labring/sealos/pkg/buildah"
 	"github.com/labring/sealos/pkg/runtime"
@@ -33,7 +35,7 @@ func NewClusterFromGenArgs(imageNames []string, args *RunArgs) ([]byte, error) {
 	}
 
 	if len(args.Cluster.Masters) == 0 {
-		localIpv4 := GetLocalIpv4()
+		localIpv4 := iputils.GetLocalIpv4()
 		args.Cluster.Masters = localIpv4
 	}
 
