@@ -18,6 +18,7 @@ import (
 	"debug/elf"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -176,4 +177,41 @@ func CheckBeTrue(b bool) {
 }
 func CheckNotBeTrue(b bool) {
 	gomega.Eventually(b).ShouldNot(gomega.BeTrue())
+}
+
+func ListLocalHostAddrs() (*[]net.Addr, error) {
+	netInterfaces, err := net.Interfaces()
+	if err != nil {
+		logger.Warn("net.Interfaces failed, err:", err.Error())
+		return nil, err
+	}
+	var allAddrs []net.Addr
+	for i := 0; i < len(netInterfaces); i++ {
+		if (netInterfaces[i].Flags & net.FlagUp) == 0 {
+			continue
+		}
+		addrs, err := netInterfaces[i].Addrs()
+		if err != nil {
+			logger.Warn("failed to get Addrs, %s", err.Error())
+		}
+		for j := 0; j < len(addrs); j++ {
+			allAddrs = append(allAddrs, addrs[j])
+		}
+	}
+	return &allAddrs, nil
+}
+
+func LocalIP(addrs *[]net.Addr) string {
+	for _, address := range *addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
+			return ipnet.IP.String()
+		}
+	}
+	return ""
+}
+
+func GetLocalIpv4() string {
+	addr, _ := ListLocalHostAddrs()
+	Ipv4 := LocalIP(addr)
+	return Ipv4
 }
