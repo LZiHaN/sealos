@@ -16,6 +16,11 @@ package buildah
 
 import (
 	"fmt"
+	"github.com/labring/sealos/fork/golang/expansion"
+	"github.com/labring/sealos/pkg/constants"
+	v2 "github.com/labring/sealos/pkg/types/v1beta1"
+	"github.com/labring/sealos/pkg/utils/maps"
+	stringsutil "github.com/labring/sealos/pkg/utils/strings"
 	"strings"
 
 	"github.com/containers/buildah"
@@ -161,6 +166,8 @@ func (impl *realImpl) Create(name string, image string, opts ...FlagSetter) (bui
 	if _, err := impl.mount(impl.finalizeName(name)); err != nil {
 		return buildah.BuilderInfo{}, fmt.Errorf("failed to mount: %v", err)
 	}
+
+	impl.printCMD(impl.finalizeName(name), image)
 	return impl.InspectContainer(name)
 }
 
@@ -211,7 +218,54 @@ func (impl *realImpl) InspectContainer(name string) (buildah.BuilderInfo, error)
 	if err != nil {
 		return buildah.BuilderInfo{}, err
 	}
+
+	logger.Info("builder env: %v", builder.Env())
+	logger.Info("builder cmd: %v", builder.Cmd())
+	logger.Info("builder entrypoint: %v", builder.Entrypoint())
+	logger.Info("builder config: %s", string(builder.Config))
+	logger.Info("builder Container: %s", builder.Container)
+
+	// TODO: image type
+
 	return buildah.GetBuildInfo(builder), nil
+}
+
+func (impl *realImpl) printCMD(name, image string) {
+	builder, err := openBuilder(getContext(), impl.store, name)
+	if err != nil {
+		panic(err)
+	}
+
+	envs := maps.FromSlice(builder.Env())
+	mapping := expansion.MappingFuncFor(envs)
+
+	// builder.OCIv1.Config.Labels
+	typeKey := maps.GetFromKeys(builder.OCIv1.Config.Labels, v2.ImageTypeKeys...)
+
+	cmds := make([]string, 0)
+	for i := range builder.Entrypoint() {
+		cmds = append(cmds, formalizeWorkingCommand(name, image, v2.ImageType(typeKey), expansion.Expand(builder.Entrypoint()[i], mapping)))
+	}
+
+	for i := range builder.Cmd() {
+		cmds = append(cmds, formalizeWorkingCommand(name, image, v2.ImageType(typeKey), expansion.Expand(builder.Cmd()[i], mapping)))
+	}
+
+	printCMD := stringsutil.RenderShellWithEnv(strings.Join(cmds, "; "), envs)
+	logger.Info("printCMD cmd: %s", printCMD)
+}
+
+func formalizeWorkingCommand(clusterName string, imageName string, t v2.ImageType, cmd string) string {
+	if cmd == "" {
+		return ""
+	}
+	switch t {
+	case v2.RootfsImage, v2.PatchImage:
+		return fmt.Sprintf(constants.CdAndExecCmd, constants.GetRootWorkDir(clusterName), cmd)
+	case v2.AppImage, "":
+		return fmt.Sprintf(constants.CdAndExecCmd, constants.GetAppWorkDir(clusterName, imageName), cmd)
+	}
+	return ""
 }
 
 func (impl *realImpl) finalizeName(name string) string {
